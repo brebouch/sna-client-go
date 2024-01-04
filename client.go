@@ -1,9 +1,10 @@
-package hashicups
+package sna
 
 import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -13,9 +14,11 @@ const HostURL string = "http://localhost:19090"
 // Client -
 type Client struct {
 	HostURL    string
+	Tenant     int
 	HTTPClient *http.Client
 	Token      string
 	Auth       AuthStruct
+	Cookies    []http.Cookie
 }
 
 // AuthStruct -
@@ -24,15 +27,48 @@ type AuthStruct struct {
 	Password string `json:"password"`
 }
 
+type TokenResponse struct {
+	TokenTtlInSeconds                  int          `json:"tokenTtlInSeconds"`
+	SessionMaxIdleTimeInSeconds        int          `json:"sessionMaxIdleTimeInSeconds"`
+	PasswordExpiresAt                  string       `json:"passwordExpiresAt"`
+	AuthResponse                       AuthResponse `json:"authResponse"`
+	LastSuccessfulLoginDate            string       `json:"lastSuccessfulLoginDate"`
+	LastSuccessfulLoginLocation        string       `json:"lastSuccessfulLoginLocation"`
+	NumFailedLoginsSinceLastSuccessful int          `json:"numFailedLoginsSinceLastSuccessful"`
+	LastLoginInfoPopupEnabled          bool         `json:"lastLoginInfoPopupEnabled"`
+	PasswordReset                      bool         `json:"passwordReset"`
+}
+
+type AuthRole struct {
+	Name   string `json:"name"`
+	Source string `json:"source"`
+}
+
 // AuthResponse -
 type AuthResponse struct {
-	UserID   int    `json:"user_id`
-	Username string `json:"username`
-	Token    string `json:"token"`
+	UserID   int        `json:"userId"`
+	Username string     `json:"username"`
+	FullName string     `json:"fullName"`
+	Roles    []AuthRole `json:"roles"`
+}
+
+func getUrl(c *Client, path string) string {
+	u := "https://" + c.HostURL + "/tenants/" + strconv.Itoa(c.Tenant) + path
+	return u
+}
+
+func getTenantUrl(c *Client) string {
+	u := "https://" + c.HostURL + "/tenants"
+	return u
+}
+
+func getTokenUrl(c *Client) string {
+	u := "https://" + c.HostURL + "/token/v2/authenticate"
+	return u
 }
 
 // NewClient -
-func NewClient(host, username, password *string) (*Client, error) {
+func NewClient(host, username, password, tenant *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		// Default Hashicups URL
@@ -53,12 +89,17 @@ func NewClient(host, username, password *string) (*Client, error) {
 		Password: *password,
 	}
 
-	ar, err := c.SignIn()
+	_, err := c.SignIn()
 	if err != nil {
 		return nil, err
 	}
 
-	c.Token = ar.Token
+	t, e := c.GetTenant(*tenant)
+	if e != nil {
+		return nil, e
+	}
+
+	c.Tenant = *t
 
 	return &c, nil
 }

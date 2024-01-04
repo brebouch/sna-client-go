@@ -1,4 +1,4 @@
-package hashicups
+package sna
 
 // Order -
 type Order struct {
@@ -8,36 +8,62 @@ type Order struct {
 
 // OrderItem -
 type OrderItem struct {
-	Coffee   Coffee `json:"coffee"`
-	Quantity int    `json:"quantity"`
+	Tag      Tag `json:"tag"`
+	Quantity int `json:"quantity"`
 }
 
-// Coffee -
-type Coffee struct {
-	ID          int                `json:"id"`
-	Name        string             `json:"name"`
-	Teaser      string             `json:"teaser"`
-	Collection  string             `json:"collection"`
-	Origin      string             `json:"origin"`
-	Color       string             `json:"color"`
-	Description string             `json:"description"`
-	Price       float64            `json:"price"`
-	Image       string             `json:"image"`
-	Ingredient  []CoffeeIngredient `json:"ingredients"`
+// TenantData -
+type TenantData struct {
+	Data []Tenant `json:"data"`
 }
 
-// Ingredient -
-type CoffeeIngredient struct {
-	ID       int    `json:"ingredient_id"`
-	Name     string `json:"name"`
-	Quantity int    `json:"quantity"`
-	Unit     string `json:"unit"`
+// Tenant -
+type Tenant struct {
+	Id          int    `json:"id"`
+	DisplayName string `json:"displayName"`
 }
 
-// Ingredient -
-type Ingredient struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Quantity int    `json:"quantity"`
-	Unit     string `json:"unit"`
+// TagListData -
+type TagListData struct {
+	Data []TagList `json:"data"`
+}
+
+// TagList -
+type TagList struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// TagData -
+type TagData struct {
+	Data Tag `json:"data"`
+}
+
+// Tag -
+type Tag struct {
+	ID                       int        `json:"id"`
+	Name                     string     `json:"name"`
+	Location                 string     `json:"location"`
+	Ranges                   []string   `json:"ranges"`
+	Description              string     `json:"description"`
+	HostBaselines            bool       `json:"hostBaselines"`
+	SuppressExcludedServices bool       `json:"suppressExcludedServices"`
+	InverseSuppression       bool       `json:"inverseSuppression"`
+	HostTrap                 bool       `json:"hostTrap"`
+	SendToCta                bool       `json:"sendToCta"`
+	DomainId                 int        `json:"domainId"`
+	ParentId                 int        `json:"parentId"`
+	Display                  TagDisplay `json:"display"`
+	ParentDisplay            TagDisplay `json:"parentDisplay"`
+}
+
+// TagDisplay Tag Display Reference -
+type TagDisplay struct {
+	DomainID int      `json:"domain_id"`
+	Editable bool     `json:"editable"`
+	ID       int      `json:"id"`
+	Location string   `json:"location"`
+	Name     string   `json:"name"`
+	Path     []string `json:"path"`
+	IdPath   []int    `json:"id_path"`
 }
